@@ -1,1 +1,1 @@
-This is the mobile frontend using react native
+This is the updated mobile frontend using react native
