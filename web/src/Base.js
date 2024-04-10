@@ -6,7 +6,6 @@ export default function Base() {
       <header>
         <nav>
           <NavLink to="/admin">Admin</NavLink>
-          <NavLink to="/login">Login</NavLink>
         </nav>
       </header>
 

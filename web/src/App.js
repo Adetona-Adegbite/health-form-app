@@ -9,14 +9,16 @@ import {
 import Base from "./Base";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
-
+import NewUser from "./pages/NewUser";
+import FormDetails from "./pages/FormDetails";
 //defining routes and what should be displayed
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Base />}>
       <Route index element={<Login />} />
-      <Route path="login" element={<Login />} />
       <Route path="admin" element={<Admin />} />
+      <Route path="admin/:formId" element={<FormDetails />} />
+      <Route path="admin/new-user" element={<NewUser />} />
     </Route>
   )
 );

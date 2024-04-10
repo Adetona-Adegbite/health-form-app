@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  justify-content: center;
+  background-color: rgb(25, 74, 5);
+  margin: 50px;
+  height: 80%;
+  border-radius: 10px;
+}
+.TierForm {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 430px;
+  width: 60%;
+
+  background: #347c07;
+  border-radius: 7px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.form{
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+}
+.h2{
+  text-align: center;
+}
