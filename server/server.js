@@ -11,7 +11,7 @@ const app = express();
 
 // Necessary Configs
 app.use(bodyParser.json());
-// app.use(cors());
+app.use(cors());
 
 // Load environment variables from .env file
 dotenv.config();
