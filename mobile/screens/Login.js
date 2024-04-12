@@ -1,16 +1,48 @@
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
 import AuthSubmitButton from "../components/AuthSubmitButton";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigation = useNavigation();
+
   const handleLogin = async () => {
-    // Perform login logic
-    // Assuming you receive userId after successful login
-    // const userId = 'user123'; // Replace this with the actual userId
-    // await AsyncStorage.setItem('userId', userId);
-    // navigation.navigate('Home');
+    setLoading(true);
+    const data = {
+      email: email,
+      password: password,
+    };
+    try {
+      const response = await fetch("http://172.20.10.2:1234/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      console.log(response);
+      const responseData = await response.json();
+      console.log(responseData);
+      if (!response.ok) {
+        setError(responseData.message);
+        setPassword("");
+        return;
+      }
+      await AsyncStorage.setItem(
+        "user-id",
+        JSON.stringify(responseData.user.user_id)
+      );
+      navigation.navigate("home");
+    } catch (e) {
+      console.log("error", e);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#16171B" }}>
@@ -20,6 +52,9 @@ export default function LoginScreen() {
           <Text style={styles.formItemTitle}>Email</Text>
           <TextInput
             style={styles.formItemInput}
+            onChangeText={(text) => {
+              setEmail(text);
+            }}
             placeholder="example@gmail.com"
             keyboardType="email-address"
             placeholderTextColor="gray"
@@ -32,31 +67,19 @@ export default function LoginScreen() {
             placeholder="password"
             keyboardType="visible-password"
             placeholderTextColor="gray"
+            onChangeText={(text) => {
+              setPassword(text);
+            }}
           />
-          <Text style={{ color: "#ccc", alignSelf: "flex-end" }}>
-            Forgot password?
+          <Text style={{ color: "red", alignSelf: "flex-end" }}>
+            {error ? error : ""}
           </Text>
         </View>
 
         <AuthSubmitButton
-          onPress={() => {
-            navigation.navigate("home");
-          }}
+          text={loading ? "Loading..." : "Next"}
+          onPress={handleLogin}
         />
-        {/* <View style={styles.lineContainer}>
-          <View style={styles.line} />
-          <Text style={styles.orText}>or with</Text>
-          <View style={styles.line} />
-        </View> */}
-        {/* <View style={styles.ouath}>
-          <OauthButton name="facebook" />
-          <OauthButton name="google" />
-          <OauthButton name="apple" />
-        </View> */}
-        {/* <Text style={{ color: "gray" }}>
-          Don't have an Account?
-          <Text style={{ color: "white" }}>Sign up</Text>
-        </Text> */}
       </View>
     </SafeAreaView>
   );

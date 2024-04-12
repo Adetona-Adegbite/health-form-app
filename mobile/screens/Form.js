@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
 
 const questionsData = [
   { id: 1, title: "What is the approved name of this network?" },
@@ -43,11 +45,14 @@ const questionsData = [
   },
   {
     id: 6,
-    title:
-      "List the number and cadre of staff working in this network.E.g Number Cadre ",
+    title: "List the number of staff working in this network.",
   },
   {
     id: 7,
+    title: "What is the cadre of staff working in this network. ",
+  },
+  {
+    id: 8,
     title: "Does the hub of the network have a bank account?",
     options: [
       { value: 2, label: "Yes" },
@@ -56,15 +61,15 @@ const questionsData = [
   },
 
   {
-    id: 8,
+    id: 9,
     title: "How many communities are within this network?​",
   },
   {
-    id: 9,
+    id: 10,
     title: "What is the total population served by this network?​",
   },
   {
-    id: 10,
+    id: 11,
     title: "Is the facility HeFRA Accredited?​",
     options: [
       { value: 2, label: "Yes" },
@@ -73,7 +78,7 @@ const questionsData = [
     ],
   },
   {
-    id: 11,
+    id: 12,
     title: "Is the facility NHIA Credentialed?​",
     options: [
       { value: 2, label: "Yes" },
@@ -81,7 +86,7 @@ const questionsData = [
     ],
   },
   {
-    id: 12,
+    id: 13,
     title: "Is there a staff on call 24 hours ​",
     options: [
       { value: 2, label: "Yes" },
@@ -89,7 +94,7 @@ const questionsData = [
     ],
   },
   {
-    id: 13,
+    id: 14,
     title: "Does the facility conduct Outreach services?",
     options: [
       { value: 2, label: "Yes" },
@@ -97,7 +102,7 @@ const questionsData = [
     ],
   },
   {
-    id: 14,
+    id: 15,
     title:
       "Does the facility have an emergency tray with appropriate equipment and items for general emergency ward?",
     options: [
@@ -106,7 +111,7 @@ const questionsData = [
     ],
   },
   {
-    id: 15,
+    id: 16,
     title:
       "Does the facility have Refrigerator/Cold box/Vaccine carrier for storing oxytocin",
     options: [
@@ -156,9 +161,24 @@ const questionsData = [
   //   ],
   // },
 ];
+
 const FormWithNumberedQuestions = () => {
+  const [userId, setUserId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const getUserId = async () => {
+      const userId = await AsyncStorage.getItem("user-id");
+      console.log(userId);
+      setUserId(userId);
+    };
+
+    getUserId();
+  }, []);
+
   const [answers, setAnswers] = useState(
-    Array.from({ length: 15 }, () => ({
+    Array.from({ length: 16 }, () => ({
       title: "",
       response: { option: "", value: "" },
     }))
@@ -192,7 +212,7 @@ const FormWithNumberedQuestions = () => {
     return true;
   };
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = async () => {
     if (validateForm()) {
       // console.log("Submitted Answers:", answers);
       // const score = answers.filter(
@@ -203,9 +223,57 @@ const FormWithNumberedQuestions = () => {
         (acc, cur) => acc + parseInt(cur.response.value),
         0
       );
-      console.log("Score", score);
-      // console.log(score);
-      // Here you can send the answers to your backend or process them further
+      const maxScore = 20; // Maximum possible score
+
+      const percentage = (score / maxScore) * 100;
+
+      let level;
+      if (percentage >= 80) {
+        level = "Level 5";
+      } else if (percentage >= 60) {
+        level = "Level 4";
+      } else if (percentage >= 40) {
+        level = "Level 3";
+      } else if (percentage >= 20) {
+        level = "Level 2";
+      } else {
+        level = "Level 1";
+      }
+      // console.log("level", level);
+
+      try {
+        setLoading(true);
+
+        const data = {
+          userId: userId,
+          title: answers[0].response.option,
+          formData: JSON.stringify(answers),
+          score: score,
+          percentage: percentage,
+          level: level,
+        };
+        console.log("data", data);
+
+        const response = await fetch("http://172.20.10.2:1234/submit-form/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        const responseData = await response.json();
+        if (!response.ok) {
+          Alert.alert(responseData.message);
+          console.log(responseData.message);
+          return;
+        }
+        navigation.navigate("home");
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+      console.log(score);
     } else {
       Alert.alert("No field can be left empty");
     }
@@ -252,7 +320,9 @@ const FormWithNumberedQuestions = () => {
           style={styles.submitButton}
           onPress={handleFormSubmit}
         >
-          <Text style={styles.submitButtonText}>Submit</Text>
+          <Text style={styles.submitButtonText}>
+            {loading ? "Submitting..." : "Submit"}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

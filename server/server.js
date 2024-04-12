@@ -30,6 +30,7 @@ client.connect(function (err) {
 // Setup Routes
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
+  console.log(email, password);
 
   try {
     // Query to check if the user exists and the password matches
@@ -44,8 +45,10 @@ app.post("/login", async (req, res) => {
     // If the user is found
     if (result.rows.length > 0) {
       const user = result.rows[0];
-      // Check if the password matches
+      // Check if the password matches\
+      console.log(user);
       const passwordMatch = await bcrypt.compare(password, user.password);
+      console.log(passwordMatch);
       if (passwordMatch) {
         // Passwords match, send a success response
         res.status(200).json({ message: "Login successful", user });
@@ -89,17 +92,37 @@ app.post("/create-user", async (req, res) => {
 });
 
 app.post("/submit-form", async (req, res) => {
-  const { user_id, title, form_data, score } = req.body;
-
+  const { userId, title, formData, score, percentage, level } = req.body;
+  console.log(userId, title, formData, score, percentage, level);
   try {
     // Query to insert form data into the database
     const query =
-      "INSERT INTO forms (user_id, title, form_data, score) VALUES ($1, $2, $3, $4)";
-    const values = [user_id, title, form_data, score];
+      "INSERT INTO forms (user_id, title, form_data, score,percentage,level) VALUES ($1, $2, $3, $4,$5,$6)";
+    const values = [userId, title, formData, score, percentage, level];
     await client.query(query, values);
     res.status(201).json({ message: "Form data submitted successfully" });
   } catch (error) {
     console.error("Error while submitting form data:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+app.get("/user-forms/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    // Query to get all forms submitted by the specified user
+    const query = {
+      text: "SELECT * FROM forms WHERE user_id = $1",
+      values: [user_id],
+    };
+
+    // Execute the query
+    const result = await client.query(query);
+
+    // Send the forms data as response
+    res.status(200).json({ forms: result.rows });
+  } catch (error) {
+    console.error("Error while fetching user forms:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });

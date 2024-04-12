@@ -15,25 +15,61 @@ import {
 import FormCard from "../components/FormCard";
 import { useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomePage() {
   const [fontLoaded] = useFonts({ NanumGothic_400Regular });
   const [refreshing, setRefreshing] = useState(false);
+  const [forms, setForms] = useState([]);
   const navigation = useNavigation();
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000); // Example timeout, replace with your actual fetch logic
+  useEffect(() => {
+    const userIdVerified = AsyncStorage.getItem("user-id");
+    console.log(userIdVerified);
+    if (!userIdVerified) {
+      navigation.navigate("auth");
+    }
+  }, [AsyncStorage, navigation]);
+  useEffect(() => {
+    async function getForms() {
+      const userId = await AsyncStorage.getItem("user-id");
+      console.log("user-id", userId);
+      try {
+        const response = await fetch(
+          `http://172.20.10.2:1234/user-forms/${userId}`
+        );
+        const data = await response.json();
+        console.log(data);
+        setForms(data.forms);
+      } catch (error) {
+        console.error("Error fetching user forms:", error);
+      }
+    }
+    getForms();
   }, []);
-  const forms = [
-    { id: 1, title: "Object 1" },
-    { id: 2, title: "Object 2" },
-    { id: 3, title: "Object 3" },
-    { id: 4, title: "Object 4" },
-    { id: 5, title: "Object 5" },
-  ];
+  const onRefresh = useCallback(() => {
+    async function getForms() {
+      const userId = await AsyncStorage.getItem("user-id");
+      try {
+        const response = await fetch(
+          `http://172.20.10.2:1234/user-forms/${userId}`
+        );
+        const data = await response.json();
+        console.log(data.forms[0].formData);
+        setForms(data.forms);
+      } catch (error) {
+        console.error("Error fetching user forms:", error);
+      }
+    }
+    getForms();
+  }, []);
+  // const forms = [
+  //   { id: 1, title: "Object 1" },
+  //   { id: 2, title: "Object 2" },
+  //   { id: 3, title: "Object 3" },
+  //   { id: 4, title: "Object 4" },
+  //   { id: 5, title: "Object 5" },
+  // ];
   return (
     <>
       {fontLoaded && (
@@ -75,16 +111,18 @@ export default function HomePage() {
                 />
               }
             >
-              {forms.map((item) => {
-                return (
+              {forms.length > 0 ? (
+                forms.map((item) => (
                   <FormCard
                     key={item.id}
                     title={item.title}
-                    id={item.id}
+                    id={item.level}
                     // onPress={formDetailsHandler.bind(this, item)}
                   />
-                );
-              })}
+                ))
+              ) : (
+                <Text style={{ color: "white" }}>No forms created yet</Text>
+              )}
             </ScrollView>
           </View>
         </SafeAreaView>
