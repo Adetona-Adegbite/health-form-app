@@ -81,7 +81,7 @@ const Form = () => {
     async function getFormData() {
       try {
         const response = await fetch(
-          `http://localhost:1234/get-form/${formId}`,
+          `https://health-form-server.onrender.com/get-form/${formId}`,
           {
             method: "GET",
           }

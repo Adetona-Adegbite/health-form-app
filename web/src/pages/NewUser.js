@@ -22,7 +22,7 @@ const NewUser = () => {
       // setTimeout(() => {
       //   setLoading(false)
       // }, 3000)
-      const response = await fetch("http://localhost:1234/create-user/", {
+      const response = await fetch("https://health-form-server.onrender.com/create-user/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

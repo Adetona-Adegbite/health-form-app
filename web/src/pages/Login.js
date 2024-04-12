@@ -22,7 +22,7 @@ export default function Login() {
       // setTimeout(() => {
       //   setLoading(false)
       // }, 3000)
-      const response = await fetch("http://localhost:1234/login/", {
+      const response = await fetch("https://health-form-server.onrender.com/login/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

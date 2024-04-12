@@ -48,7 +48,7 @@ export default function HomePage() {
     async function getForms() {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:1234/user-forms/", {
+        const response = await fetch("https://health-form-server.onrender.com/user-forms/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
