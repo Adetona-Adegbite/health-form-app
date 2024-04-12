@@ -1,24 +1,30 @@
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import classes from "./Admin.module.css";
-import { PieChart } from "react-minimal-pie-chart";
+import { Navigate } from "react-router-dom";
+// import { PieChart } from "react-minimal-pie-chart";
 // import { Fragment, useEffect, useState } from "react";
 // import Cookies from "universal-cookie";
 // import { CopyToClipboard } from "react-copy-to-clipboard";
 
-function FormCard({ title, id, onPress, copyToClipboard }) {
+function FormCard({ title, id, level, onPress, copyToClipboard }) {
+  const navigate = useNavigate();
+  function handleButtonClick(id) {
+    navigate(`/admin/${id}`);
+  }
   return (
     <div className={classes.cardContainer}>
       <div className={classes.textContainer}>
         <h2 className={classes.nameText}>{title}</h2>
-        <p className={classes.dataText}>{id}</p>
+        <p className={classes.dataText}>{level}</p>
       </div>
       <div>
         <button
-          //   onClick={handleButtonClick}
+          onClick={handleButtonClick.bind(this, id)}
           className={classes.showDetailsButton}
         >
           {/* {copied ? "Copied" : "Copy to Clipboard"} */}
-          Copy to Clipboard
+          Show Details
         </button>
       </div>
     </div>
@@ -26,12 +32,44 @@ function FormCard({ title, id, onPress, copyToClipboard }) {
 }
 
 export default function HomePage() {
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [forms, setForms] = useState([]);
+  const navigate = useNavigate();
+  const handleClick = () => {
+    return navigate("/admin/new-user");
+  };
   let data = [
     { title: "One", value: 1, color: "#FFC074" },
     { title: "Two", value: 2, color: "#A2D2FF" },
     { title: "Three", value: 3, color: "#FF9292" },
   ];
-
+  useEffect(() => {
+    async function getForms() {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:1234/user-forms/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const responseData = await response.json();
+        // console.log(responseData.forms);
+        if (!response.ok) {
+          setError(responseData.message);
+          console.log(responseData.message);
+          return;
+        }
+        setForms(responseData.forms);
+      } catch (e) {
+        console.log(e);
+      } finally {
+        console.log("Done");
+      }
+    }
+    getForms();
+  }, []);
   return (
     <div className={classes.page}>
       <div className={classes.top}>
@@ -42,7 +80,9 @@ export default function HomePage() {
         <div className={classes.dp}>{/* <p>{username[0]}</p> */}</div>
       </div>
       <div className="NewUser">
-        <button class="Admin_showDetailsButton__aa83D">Create New User</button>
+        <button class="Admin_showDetailsButton__aa83D" onClick={handleClick}>
+          Create New User
+        </button>
       </div>
       <div className={classes.middle}>
         <p>Your Forms</p>
@@ -58,7 +98,7 @@ export default function HomePage() {
           </div>
         </>
       )} */}
-      <div className={classes.Stats}>
+      {/* <div className={classes.Stats}>
         <div className={classes.FormCount}>
           <p> Number of Forms: {data.length}</p>
         </div>
@@ -87,14 +127,15 @@ export default function HomePage() {
             labelPosition={90}
           />
         </div>
-      </div>
+      </div> */}
       <div className={classes.forms}>
-        {data.map((item) => {
+        {forms.map((item) => {
           return (
             <FormCard
-              key={item.id}
+              key={item.form_id}
               title={item.title}
-              id={item.id}
+              id={item.form_id}
+              level={item.level}
               //   copyToClipboard={copyToClipboardHandler}
               //   onPress={formDetailsHandler.bind(this, item)}
             />

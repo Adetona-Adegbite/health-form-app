@@ -126,6 +126,42 @@ app.get("/user-forms/:user_id", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+app.get("/user-forms", async (req, res) => {
+  try {
+    // Query to get all forms submitted by the specified user
+    const query = {
+      text: "SELECT * FROM forms",
+    };
+
+    // Execute the query
+    const result = await client.query(query);
+
+    // Send the forms data as response
+    res.status(200).json({ forms: result.rows });
+  } catch (error) {
+    console.error("Error while fetching user forms:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+app.get("/get-form/:formId", async (req, res) => {
+  const { formId } = req.params;
+  try {
+    // Query to get all forms submitted by the specified user
+    const query = {
+      text: "SELECT * FROM forms WHERE form_id = $1",
+      values: [formId],
+    };
+
+    // Execute the query
+    const result = await client.query(query);
+
+    // Send the forms data as response
+    res.status(200).json({ forms: result.rows });
+  } catch (error) {
+    console.error("Error while fetching user forms:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 const PORT = process.env.PORT || 1234;
 app.listen(PORT, () => {

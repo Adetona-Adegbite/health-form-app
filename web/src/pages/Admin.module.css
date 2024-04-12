@@ -13,10 +13,10 @@
 .top {
   display: flex;
   flex-direction: row;
-  width: 100%;
+  width: 95%;
   justify-content: space-between;
+  margin: 10px auto;
   align-items: center;
-  margin-bottom: 20px;
   padding: 20px;
 }
 
