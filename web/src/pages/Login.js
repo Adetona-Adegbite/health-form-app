@@ -2,7 +2,7 @@
 import classes from "./Authpage.module.css";
 import { useEffect, useState } from "react";
 import Cookies from "universal-cookie";
-
+import image from "../health.png"
 
 export default function Login() {
   const navigate = useNavigate();
@@ -47,6 +47,7 @@ export default function Login() {
   return (
     <div className={classes.container}>
       <div className={classes["form"]}>
+        <img src={image} style={{width:"70px",alignSelf:"center",margin:"auto"}} />
         <header>Login</header>
         <form action="#">
           <input
@@ -87,12 +88,7 @@ export default function Login() {
         >
           {error && error}
         </p>
-        <div className={classes.signup}>
-          <span className={classes.signup}>
-            Don't have an account?
-            <label for="check">Signup</label>
-          </span>
-        </div>
+        
       </div>
     </div>
   );

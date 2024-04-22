@@ -2,7 +2,27 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import classes from "./Admin.module.css";
 import { PieChart } from "react-minimal-pie-chart";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
 import image from "../health.png";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 function FormCard({ title, id, level, onPress }) {
   const navigate = useNavigate();
   function handleButtonClick(id) {
@@ -47,6 +67,28 @@ export default function HomePage() {
     console.log(highestScoreFacility);
     setBestHighest(highestScoreFacility);
   }
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Number of Facilities by Level",
+      },
+    },
+    scales: {
+      y: {
+        type: 'linear',
+        ticks: {
+          stepSize: 1,
+          precision: 0,
+        },
+      },
+    },
+  };
+
   const levelColors = {
     "Level 1": "#DC6ACF",
     "Level 2": "#7DDE92",
@@ -58,24 +100,36 @@ export default function HomePage() {
   };
 
   // Function to count people in each level and format it
-  function countPeopleByLevel(forms) {
+  const countFacilitiesByLevel = (forms) => {
     const levelCounts = {};
-
-    // Count people in each level
     forms.forEach((form) => {
       const level = form.level;
       levelCounts[level] = (levelCounts[level] || 0) + 1;
     });
+    return levelCounts;
+  };
 
-    // Format the counts into an array of objects
-    const formattedData = Object.keys(levelCounts).map((level) => ({
-      title: level,
-      value: levelCounts[level],
-      color: levelColors[level] || "#000000", // Default color if not found in levelColors
-    }));
-
-    return formattedData;
-  }
+  const formatDataForBarChart = (levelCounts) => {
+    const labels = Object.keys(levelCounts);
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          label: "Number of Facilities",
+          data: labels.map((level) => levelCounts[level]),
+          backgroundColor: [
+            "#DC6ACF",
+            "#7DDE92",
+            "#276FBF",
+            "#F03A47",
+            "#FCF300",
+            // Add more colors if needed
+          ],
+        },
+      ],
+    };
+    return data;
+  };
 
   // Fetch forms from the server on component mount
   useEffect(() => {
@@ -97,8 +151,14 @@ export default function HomePage() {
         }
         setForms(responseData.forms);
         getHighestScoringFacility(responseData.forms);
-        setGraphData(countPeopleByLevel(responseData.forms));
-        console.log("graph data", countPeopleByLevel(responseData.forms));
+        // console.log(countPeopleByLevel(responseData.forms));
+        setGraphData(
+          formatDataForBarChart(countFacilitiesByLevel(responseData.forms))
+        );
+        console.log(
+          formatDataForBarChart(countFacilitiesByLevel(responseData.forms))
+        );
+        // console.log("graph data", countPeopleByLevel(responseData.forms));
       } catch (error) {
         console.error("Error fetching forms:", error.message);
       }
@@ -143,18 +203,12 @@ export default function HomePage() {
       <div className={classes.mainContent}>
         <h1>Analytics</h1>
         <div className={classes.analysis}>
-          <div style={{ height: "80%" }}>
+          <div style={{ height: "60%" }}>
             <p>Levels</p>
             <div>
-              <PieChart
-                data={graphData}
-                label={({ dataEntry }) =>
-                  `${dataEntry.title}: ${dataEntry.value} Facilities`
-                }
-                labelStyle={{
-                  fontSize: "0.3rem",
-                }}
-              />
+              <div style={{ height: "100%", width: "100%" }}>
+                <Bar data={graphData} options={options} />
+              </div>
             </div>
           </div>
           <div style={{ height: "60%" }}>
