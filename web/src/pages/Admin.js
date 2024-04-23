@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import classes from "./Admin.module.css";
 import { PieChart } from "react-minimal-pie-chart";
 import {
@@ -80,7 +80,7 @@ export default function HomePage() {
     },
     scales: {
       y: {
-        type: 'linear',
+        type: "linear",
         ticks: {
           stepSize: 1,
           precision: 0,
@@ -132,7 +132,7 @@ export default function HomePage() {
   };
 
   // Fetch forms from the server on component mount
-  useEffect(() => {
+  useLayoutEffect(() => {
     async function getForms() {
       try {
         const response = await fetch(
@@ -164,6 +164,7 @@ export default function HomePage() {
       }
     }
     getForms();
+    console.log(graphData);
   }, []);
 
   // Handle click on "Create New User" button
@@ -172,60 +173,64 @@ export default function HomePage() {
   };
 
   return (
-    <div className={classes.page}>
-      {/* Sidebar */}
-      <div className={classes.sidebar}>
-        <img style={{ height: "100px" }} src={image} />
-        <div className={classes.formsSidebar}>
-          <h1>Welcome user</h1>
-          <p>View Forms and create Users</p>
-          <button
-            className={classes.createNewUserButton}
-            onClick={handleCreateNewUser}
-          >
-            Create New User
-          </button>
-          <p style={{ marginTop: "10%" }}>Your Forms</p>
-          <div className={classes.scrollBox}>
-            {forms.map((item) => (
-              <FormCard
-                key={item.form_id}
-                title={item.title}
-                id={item.form_id}
-                level={item.level}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className={classes.mainContent}>
-        <h1>Analytics</h1>
-        <div className={classes.analysis}>
-          <div style={{ height: "60%" }}>
-            <p>Levels</p>
-            <div>
-              <div style={{ height: "100%", width: "100%" }}>
-                <Bar data={graphData} options={options} />
+    <>
+      {forms.length > 0 && graphData && (
+        <div className={classes.page}>
+          {/* Sidebar */}
+          <div className={classes.sidebar}>
+            <img style={{ height: "100px" }} src={image} />
+            <div className={classes.formsSidebar}>
+              <h1>Welcome user</h1>
+              <p>View Forms and create Users</p>
+              <button
+                className={classes.createNewUserButton}
+                onClick={handleCreateNewUser}
+              >
+                Create New User
+              </button>
+              <p style={{ marginTop: "10%" }}>Your Forms</p>
+              <div className={classes.scrollBox}>
+                {forms.map((item) => (
+                  <FormCard
+                    key={item.form_id}
+                    title={item.title}
+                    id={item.form_id}
+                    level={item.level}
+                  />
+                ))}
               </div>
             </div>
           </div>
-          <div style={{ height: "60%" }}>
-            <p style={{ position: "relative", top: "10%" }}>Best Facility</p>
-            <p
-              style={{
-                position: "relative",
-                top: "25%",
-                fontSize: "1.5rem",
-                fontWeight: "bolder",
-                color: "black",
-              }}
-            >
-              {highest}
-            </p>
-          </div>
-          {/* <div style={{ height: "50%" }}>
+
+          {/* Main content */}
+          <div className={classes.mainContent}>
+            <h1>Analytics</h1>
+            <div className={classes.analysis}>
+              <div style={{ height: "60%" }}>
+                <p>Levels</p>
+                <div>
+                  <div style={{ height: "100%", width: "100%" }}>
+                    <Bar data={graphData} options={options} />
+                  </div>
+                </div>
+              </div>
+              <div style={{ height: "60%" }}>
+                <p style={{ position: "relative", top: "10%" }}>
+                  Best Facility
+                </p>
+                <p
+                  style={{
+                    position: "relative",
+                    top: "25%",
+                    fontSize: "1.5rem",
+                    fontWeight: "bolder",
+                    color: "black",
+                  }}
+                >
+                  {highest}
+                </p>
+              </div>
+              {/* <div style={{ height: "50%" }}>
             <p style={{ position: "relative", top: "10%" }}>Number of Users</p>
             <p
               style={{
@@ -239,24 +244,26 @@ export default function HomePage() {
               39
             </p>
           </div> */}
-          <div style={{ height: "50%" }}>
-            <p style={{ position: "relative", top: "10%" }}>
-              Number of Facilities
-            </p>
-            <p
-              style={{
-                position: "relative",
-                top: "25%",
-                fontSize: "2rem",
-                fontWeight: "bolder",
-                color: "black",
-              }}
-            >
-              {forms.length}
-            </p>
+              <div style={{ height: "50%" }}>
+                <p style={{ position: "relative", top: "10%" }}>
+                  Number of Facilities
+                </p>
+                <p
+                  style={{
+                    position: "relative",
+                    top: "25%",
+                    fontSize: "2rem",
+                    fontWeight: "bolder",
+                    color: "black",
+                  }}
+                >
+                  {forms.length}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
